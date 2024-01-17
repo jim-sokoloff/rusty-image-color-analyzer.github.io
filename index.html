@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" class="min-h-full">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rusty Image Color Analyzer with WASM</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-dvh bg-gradient-to-b from-[#dcf7fa] to-[#d5ebed] min-h-full bg-cover" >
+  <!-- Hero Section -->
+  <div class="flex items-center justify-center">
+    <div class="text-center">
+
+      <img src="rusty.webp" alt="Cute Crab" class="mx-auto my-20 w-48">
+      <h1 class="mb-10 text-4xl font-bold text-orange-600">Rusty Image Color Analyzer with WASM</h1>
+
+        <div class="flex justify-center bg-[#dcf7fa]">
+          <div>
+            <input type="file" id="imageInput" accept="image/*"
+              class="block w-full text-lg p-2 border border-gray-300 rounded mb-4">
+            <button id="processButton" class="mb-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+              Analyzer Colors
+            </button>
+            <img id="imagePreview"
+              class="max-w-sm rounded border bg-white p-1 dark:border-neutral-700 dark:bg-neutral-800"
+              style="display: none;">
+            <div id="result" class="mt-4"></div>
+          </div>
+        </div>
+
+        <!-- Your WASM and JavaScript will go here -->
+        <script type="module">
+          import init, { process_image } from './rusty_image_color_sampler.js';
+
+          document.getElementById('imageInput').addEventListener('change', event => {
+            const file = event.target.files[0];
+            if (file) {
+              // Create a URL for the selected file
+              const imageUrl = URL.createObjectURL(file);
+
+              // Set the image URL to the img tag to display the preview
+              const imagePreview = document.getElementById('imagePreview');
+              imagePreview.src = imageUrl;
+              imagePreview.style.display = 'block';
+
+              const reader = new FileReader();
+              reader.onload = async (e) => {
+                await init();
+                // Clear previous results
+                const resultContainer = document.getElementById('result');
+                resultContainer.innerHTML = '';
+
+                results.forEach(result => {
+                  // Create a container for each color result
+                  const colorContainer = document.createElement('div');
+                  colorContainer.classList.add('flex', 'items-center', 'mb-2');
+
+                  // Extract color from result string
+                  const colorMatch = result.match(/#[0-9A-Fa-f]{6}/);
+                  const color = colorMatch ? colorMatch[0] : '#FFFFFF';
+
+                  // Create color swatch
+                  const colorSwatch = document.createElement('div');
+                  colorSwatch.style.width = '50px';
+                  colorSwatch.style.height = '50px';
+                  colorSwatch.style.backgroundColor = color;
+                  colorSwatch.classList.add('mr-2', 'rounded');
+
+                  // Create text node for color info
+                  const colorText = document.createTextNode(result);
+
+                  // Append swatch and text to container
+                  colorContainer.appendChild(colorSwatch);
+                  colorContainer.appendChild(colorText);
+
+                  // Append container to result container
+                  resultContainer.appendChild(colorContainer);
+                });
+              };
+              reader.readAsArrayBuffer(file);
+            } else {
+              alert('Please select an image file.');
+            }
+          });
+
+          // Clear the image preview when a new file is selected
+          document.getElementById('imageInput').addEventListener('click', () => {
+            const imagePreview = document.getElementById('imagePreview');
+            imagePreview.style.display = 'none';
+            imagePreview.src = '';
+          });
+
+
+
+          document.getElementById('processButton').addEventListener('click', async () => {
+            const file = document.getElementById('imageInput').files[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = async (e) => {
+                await init();
+                const results = process_image(new Uint8Array(e.target.result));
+
+                // Clear previous results
+                const resultContainer = document.getElementById('result');
+                resultContainer.innerHTML = '';
+
+                results.forEach(result => {
+                  // Create a container for each color result
+                  const colorContainer = document.createElement('div');
+                  colorContainer.classList.add('flex', 'items-center', 'mb-2');
+
+                  // Extract color from result string
+                  const colorMatch = result.match(/#[0-9A-Fa-f]{6}/);
+                  const color = colorMatch ? colorMatch[0] : '#FFFFFF';
+
+                  // Create color swatch
+                  const colorSwatch = document.createElement('div');
+                  colorSwatch.style.width = '50px';
+                  colorSwatch.style.height = '50px';
+                  colorSwatch.style.backgroundColor = color;
+                  colorSwatch.classList.add('mr-2', 'rounded');
+
+                  // Create text node for color info
+                  const colorText = document.createTextNode(result);
+
+                  // Append swatch and text to container
+                  colorContainer.appendChild(colorSwatch);
+                  colorContainer.appendChild(colorText);
+
+                  // Append container to result container
+                  resultContainer.appendChild(colorContainer);
+                });
+              };
+              reader.readAsArrayBuffer(file);
+            } else {
+              alert('Please select an image file.');
+            }
+          });
+
+        </script>
+      </body>
+
+</html>
