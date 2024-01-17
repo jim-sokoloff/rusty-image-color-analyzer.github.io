@@ -54,10 +54,10 @@ pub fn process_image(image_data: &[u8]) -> Vec<String> {
         let color_hsb = rgb_to_hsb(Rgb(color)); // Corrected this line
         if unique_colors.iter().all(|&unique| {
             let (sat_diff, bri_diff, hue_diff) = sbh_diff(color_hsb, rgb_to_hsb(Rgb(unique)));
-            sat_diff > 0.1 && bri_diff > 0.1 && hue_diff > 15.0 // Adjust thresholds as needed
+            sat_diff > 0.1 && bri_diff > 0.1 && hue_diff > 10.0 // Adjust thresholds as needed
         }) {
             unique_colors.push(color);
-            if unique_colors.len() >= 5 {
+            if unique_colors.len() >= 20 {
                 break;
             } // Limit to 5 unique colors
         }
